@@ -1,0 +1,8 @@
+# Ferramentas locais / local tooling
+.claude/
+
+# Lixo do SO / OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
