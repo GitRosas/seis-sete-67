@@ -1,22 +1,14 @@
-/* =========================================================================
-   6-7 / 67 — LÓGICA (JavaScript vanilla, sem dependências)
-   Tudo offline. Sons gerados no browser. Comentado em português.
-   Índice:
-     A. Utilitários (atalhos, localStorage, sprites)
-     B. SOM   — Web Audio + Web Speech (partilhado por várias ferramentas)
-     C. FX    — confetti e toasts
-     D. ACH   — conquistas / achievements
-     E. Fundo animado + chuva de 67
-     F. Loader, navegação, tema, pânico, código secreto, rasto do cursor
-     G. As 17 ferramentas
-   ========================================================================= */
+// 6-7 / 67 — vanilla js, sem libs. tudo offline, sons feitos no browser.
 "use strict";
 
-/* ============================ A. UTILITÁRIOS =========================== */
+// atalhos e helpers
 const $  = (s, c = document) => c.querySelector(s);
 const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
 const SEM_MOVIMENTO = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const rnd = (n) => Math.floor(Math.random() * n);          // inteiro 0..n-1
+/* Modo "poupar": telemóvel / ecrã pequeno ou CPU fraca → menos partículas, menos fps,
+   chuva desligada por defeito. Partilhado por BG, FX e o som dos botões. */
+const POUPAR = window.matchMedia("(max-width: 600px)").matches || (navigator.hardwareConcurrency || 8) <= 4;
+const rnd = (n) => Math.floor(Math.random() * n);
 const escolha = (arr) => arr[rnd(arr.length)];
 
 /* Wrapper seguro do localStorage (não rebenta se estiver bloqueado) */
@@ -39,7 +31,7 @@ function spriteEmoji(ch) {
   _spriteCache[ch] = c; return c;
 }
 
-/* ============================== B. SOM ================================= */
+// som: web audio (tons) + web speech (voz)
 const SOM = (() => {
   let ac = null;
   function ctx() {
@@ -92,14 +84,14 @@ const SOM = (() => {
     u.rate = rate; u.pitch = pitch; u.volume = 1;
     speechSynthesis.speak(u); return true;
   }
-  return { ctx, tom, kick, hat, snare, ding, doisTons, beep, falar, temVoz, vozes: () => vozes };
+  return { ctx, tom, kick, hat, snare, ding, doisTons, beep, falar };
 })();
 
-/* =============================== C. FX ================================= */
+// confetti + toasts
 const FX = (() => {
   let canvas, ctx, parts = [], raf = null;
   const EMOJIS = ["6", "7", "🤚", "🤌", "🔮", "🕕", "🎲", "✨", "💥"];
-  const MAX = 240;
+  const MAX = POUPAR ? 90 : 240;
   function init() { canvas = $("#fxCanvas"); ctx = canvas.getContext("2d"); resize(); window.addEventListener("resize", resize); }
   function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
   function criar(x, y, vx, vy) { return { x, y, vx, vy, emoji: escolha(EMOJIS), tam: 18 + Math.random() * 26, rot: Math.random() * 6.28, vrot: (Math.random() - 0.5) * 0.3, vida: 1 }; }
@@ -135,14 +127,14 @@ const FX = (() => {
   return { init, explosao, chuva, burstEl, toast };
 })();
 
-/* ============================== D. ACH ================================= */
+// conquistas
 const ACH = (() => {
   const CHAVE = "conquistas67";
   const LISTA = [
     { id: "click67",   ico: "🔢", nome: "Profissional",   desc: "Chegaste a 67 no contador" },
     { id: "scroll",    ico: "♾️", nome: "Sobrevivente",    desc: "Passaste 300 no scroll" },
     { id: "panic",     ico: "🚨", nome: "Pânico Total",    desc: "Entraste em modo pânico" },
-    { id: "konami",    ico: "🕹️", nome: "Código Secreto",  desc: "Escreveste 6 7 6 7" },
+    { id: "konami",    ico: "🕹️", nome: "Código Secreto",  desc: "6 7 6 7 dentro do pânico 🚨" },
     { id: "wheel",     ico: "🎡", nome: "Roleta Viciada",  desc: "Giraste a roda (deu 67!)" },
     { id: "factory",   ico: "🏭", nome: "Industrial",      desc: "Produziste 67 na fábrica" },
     { id: "pet",       ico: "🐣", nome: "Cuidador",        desc: "Alimentaste o pet" },
@@ -151,7 +143,16 @@ const ACH = (() => {
     { id: "translate", ico: "🔤", nome: "Poliglota",       desc: "Traduziste para 67-ês" },
     { id: "cpm",       ico: "⚡", nome: "Dedos Rápidos",    desc: "Fizeste o teste CPM" },
     { id: "calc",      ico: "🧮", nome: "Matemático",      desc: "67 = 67. Sempre." },
+    { id: "crystal",   ico: "🔮", nome: "Vidente",         desc: "Consultaste a bola de cristal" },
+    { id: "rng",       ico: "🎲", nome: "Aleatório?",      desc: "Geraste o número (67, claro)" },
+    { id: "reasons",   ico: "📜", nome: "Tens Razão",      desc: "Geraste as 67 razões" },
+    { id: "username",  ico: "🎮", nome: "Gamertag",        desc: "Geraste uma alcunha 67" },
+    { id: "weather",   ico: "🌦️", nome: "Meteorologista",  desc: "Viste a previsão (sempre 67°)" },
+    { id: "boombox",   ico: "📻", nome: "Produtor",        desc: "Tocaste a batida 6-7" },
+    { id: "rain",      ico: "🌧️", nome: "Chove 67",        desc: "Ligaste a chuva de 67" },
+    { id: "counter670",ico: "😵", nome: "Procura Ajuda",   desc: "Chegaste a 670 no contador" },
     { id: "explorer",  ico: "🗺️", nome: "Explorador",      desc: "Abriste todas as ferramentas" },
+    { id: "lenda",     ico: "👑", nome: "LENDA DO 67",     desc: "Desbloqueaste tudo. És 6-7." },
   ];
   let ganhas = new Set(store.get(CHAVE, []));
   function unlock(id) {
@@ -160,6 +161,10 @@ const ACH = (() => {
     ganhas.add(id); store.set(CHAVE, [...ganhas]);
     FX.toast(`🏆 Conquista! / Achievement!<br><b>${a.ico} ${a.nome}</b>`, { ach: true, ms: 3200 });
     render();
+    // Meta-conquista: desbloqueia "LENDA" quando todas as outras estiverem feitas
+    if (id !== "lenda" && LISTA.every(x => x.id === "lenda" || ganhas.has(x.id))) {
+      setTimeout(() => unlock("lenda"), 600);
+    }
   }
   function render() {
     const grid = $("#achGrid"); if (!grid) return;
@@ -173,27 +178,47 @@ const ACH = (() => {
     });
     const prog = $("#achProgress");
     if (prog) prog.textContent = `${ganhas.size} / ${LISTA.length} desbloqueadas`;
+
+    // Crachá no troféu da topbar (sempre visível) — destaca que há conquistas por fazer
+    const badge = $("#achBadge");
+    if (badge) {
+      badge.textContent = `${ganhas.size}/${LISTA.length}`;
+      $("#openAch").classList.toggle("tem-por-fazer", ganhas.size < LISTA.length);
+    }
+    // Barra de progresso no hub
+    const hubCount = $("#hubAchCount"), hubFill = $("#hubAchFill");
+    if (hubCount) hubCount.textContent = `${ganhas.size}/${LISTA.length}`;
+    if (hubFill) hubFill.style.width = Math.round(ganhas.size / LISTA.length * 100) + "%";
   }
   return { unlock, render, total: LISTA.length };
 })();
 
-/* =================== E. FUNDO ANIMADO + CHUVA DE 67 ==================== */
+// fundo animado + chuva de 67
 const BG = (() => {
-  let canvas, ctx, itens = [], gotas = [], rain = false;
+  let canvas, ctx, itens = [], gotas = [], rain = false, lastW = -1, rzT = null, last = 0;
   function init() {
     canvas = $("#bgCanvas"); ctx = canvas.getContext("2d");
-    resize(); window.addEventListener("resize", resize);
-    if (SEM_MOVIMENTO) estatico(); else loop();
+    aplicarTamanho();
+    // debounce do resize (a barra de endereço do telemóvel dispara resize a cada scroll)
+    window.addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(aplicarTamanho, 150); });
+    window.addEventListener("orientationchange", aplicarTamanho);
+    if (SEM_MOVIMENTO) estatico(); else requestAnimationFrame(loop);
   }
-  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; criar(); }
+  function aplicarTamanho() {
+    canvas.width = innerWidth; canvas.height = innerHeight + 140;   // folga p/ a barra de endereço
+    if (innerWidth !== lastW) { lastW = innerWidth; criar(); }      // só recria partículas se a LARGURA mudar
+  }
   function criar() {
-    const n = Math.min(54, Math.round(innerWidth * innerHeight / 32000));
+    const n = Math.min(POUPAR ? 16 : 54, Math.round(innerWidth * innerHeight / 32000));
     const s = ["6", "7", "🤚", "🤌"];
     itens = [];
     for (let i = 0; i < n; i++) itens.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, tam: 22 + Math.random() * 50, vel: 0.15 + Math.random() * 0.45, deriva: (Math.random() - 0.5) * 0.3, rot: Math.random() * 6.28, vrot: (Math.random() - 0.5) * 0.01, simb: escolha(s), alfa: 0.05 + Math.random() * 0.09 });
   }
   function estatico() { itens.forEach(it => { const sp = spriteEmoji(it.simb); ctx.save(); ctx.globalAlpha = it.alfa; ctx.drawImage(sp, it.x - it.tam / 2, it.y - it.tam / 2, it.tam, it.tam); ctx.restore(); }); }
-  function loop() {
+  function loop(t) {
+    if (document.hidden) { requestAnimationFrame(loop); return; }          // pausa com a aba escondida
+    if (POUPAR && t - last < 33) { requestAnimationFrame(loop); return; }   // ~30fps no telemóvel
+    last = t;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     itens.forEach(it => {
       it.y -= it.vel; it.x += it.deriva; it.rot += it.vrot;
@@ -203,7 +228,8 @@ const BG = (() => {
       ctx.drawImage(sp, -it.tam / 2, -it.tam / 2, it.tam, it.tam); ctx.restore();
     });
     if (rain) {
-      if (gotas.length < 70 && Math.random() < 0.85) gotas.push({ x: Math.random() * canvas.width, y: -40, tam: 28 + Math.random() * 44, vel: 3 + Math.random() * 6, simb: escolha(["6", "7", "67", "6-7"]) });
+      const maxG = POUPAR ? 28 : 70, prob = POUPAR ? 0.5 : 0.85;
+      if (gotas.length < maxG && Math.random() < prob) gotas.push({ x: Math.random() * canvas.width, y: -40, tam: 28 + Math.random() * 44, vel: 3 + Math.random() * 6, simb: escolha(["6", "7", "67", "6-7"]) });
       gotas.forEach(g => { g.y += g.vel; const sp = spriteEmoji(g.simb); ctx.save(); ctx.globalAlpha = 0.5; ctx.drawImage(sp, g.x - g.tam / 2, g.y - g.tam / 2, g.tam, g.tam); ctx.restore(); });
       gotas = gotas.filter(g => g.y < canvas.height + 60);
     } else if (gotas.length) gotas = [];
@@ -213,12 +239,12 @@ const BG = (() => {
   return { init, setRain };
 })();
 
-/* ================= ARRANQUE: liga tudo quando o DOM está pronto ======== */
+// arranque
 document.addEventListener("DOMContentLoaded", () => {
-  // Cada init é protegido para que um erro numa ferramenta não parta as outras
+  // se uma ferramenta rebentar, as outras continuam
   const mods = [
     FX.init, BG.init, iniciarLoader, iniciarNavegacao, iniciarTema, iniciarPanico,
-    iniciarKonami, iniciarRasto, iniciarToggles, iniciarSomBotoes,
+    iniciarKonami, iniciarRasto, iniciarToggles, iniciarSomBotoes, iniciarOnboarding,
     iniciarContador, iniciarBola, iniciarRandom, iniciarRelogio, iniciarRazoes,
     iniciarCalculadora, iniciarQuiz, iniciarTradutor, iniciarRoda,
     iniciarAlcunha, iniciarTempo, iniciarFabrica, iniciarPet, iniciarCPM, iniciarBoombox,
@@ -228,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ACH.render();
 });
 
-/* =========================== F1. LOADER ================================ */
+// ecrã de loading
 function iniciarLoader() {
   const fill = $("#loaderFill"), pct = $("#loaderPct"), txt = $("#loaderTxt"), loader = $("#loader");
   function fim() { loader.classList.add("done"); setTimeout(() => loader.remove(), 600); }
@@ -249,7 +275,7 @@ function iniciarLoader() {
   }, 110);
 }
 
-/* =========================== F2. NAVEGAÇÃO ============================= */
+// navegação entre vistas
 const TOOLS = ["counter","crystal","random","clock","reasons","calc","quiz","translator","wheel","username","weather","factory","pet","cpm","boombox","scroll"];
 let abertas = new Set();
 function iniciarNavegacao() {
@@ -259,6 +285,7 @@ function iniciarNavegacao() {
     $$(".view").forEach(v => v.classList.remove("active"));
     const alvo = $("#view-" + nome); if (alvo) alvo.classList.add("active");
     document.body.classList.toggle("full-mode", nome === "scroll");
+    document.documentElement.classList.toggle("full-mode", nome === "scroll");
     if (nome !== "scroll") window.scrollTo({ top: 0, behavior: "auto" });
     // Conquista "explorador": abrir todas as ferramentas
     if (TOOLS.includes(nome)) { abertas.add(nome); if (abertas.size >= TOOLS.length) ACH.unlock("explorer"); }
@@ -268,7 +295,7 @@ function iniciarNavegacao() {
   window.__mostrar = mostrar;
 }
 
-/* =========================== F3. TEMA 6/7 ============================== */
+// tema 6/7
 function iniciarTema() {
   const btn = $("#toggleTheme");
   function aplicar(t) {
@@ -283,7 +310,7 @@ function iniciarTema() {
   });
 }
 
-/* =========================== F4. PÂNICO ================================ */
+// modo pânico
 function iniciarPanico() {
   const overlay = $("#panic"), btn = $("#panicBtn"), esc = $("#panicEscape"), texto = $(".panic-text", overlay);
   let intervalo = null;
@@ -302,32 +329,47 @@ function iniciarPanico() {
     if (intervalo) { clearInterval(intervalo); intervalo = null; }
   }
   btn.addEventListener("click", () => ativo() ? desligar() : ligar());
-  // Sai SÓ pelo botão "ACALMA" (ou ESC no teclado). Clicar no fundo não fecha.
+  // só fecha pelo botão ou ESC (clicar no fundo não conta)
   esc.addEventListener("click", e => { e.stopPropagation(); desligar(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && ativo()) desligar(); });
   window.__sairPanico = desligar;   // usado pelo código secreto
 }
 
-/* ===================== F5. CÓDIGO SECRETO (6 7 6 7) ==================== */
+// código secreto (6 7 6 7)
 function iniciarKonami() {
+  // O código secreto SÓ conta dentro do ecrã de PÂNICO 🚨.
+  // Funciona por TECLADO (6 7 6 7) e por TOQUE (4 toques no ecrã de pânico, p/ telemóvel).
+  const overlay = $("#panic");
+  const noPanico = () => !!overlay && overlay.classList.contains("show");
+  function ativar() {
+    if (window.__sairPanico) window.__sairPanico();   // fecha o pânico
+    if (window.__mostrar) window.__mostrar("hub");     // volta à página inicial
+    FX.chuva(POUPAR ? 50 : 80);
+    FX.toast("🕹️ MODO SECRETO! / SECRET MODE!<br>seis sete seis sete 🤯", { ms: 4000 });
+    SOM.doisTons(523, 784, "triangle"); SOM.falar(1.2, 1.4, "six seven six seven");
+    const main = document.getElementById("main");
+    if (main) { main.classList.add("shake"); setTimeout(() => main.classList.remove("shake"), 1500); }
+    ACH.unlock("konami");
+  }
+
+  // Teclado: 6 7 6 7 — só avança se o pânico estiver aberto
   const alvo = ["6", "7", "6", "7"]; let pos = 0;
   document.addEventListener("keydown", e => {
-    if (e.key === alvo[pos]) {
-      pos++;
-      if (pos === alvo.length) {
-        pos = 0; ACH.unlock("konami");
-        if (window.__sairPanico) window.__sairPanico();   // sai do pânico, se estiver ativo
-        if (window.__mostrar) window.__mostrar("hub");     // volta à página inicial
-        FX.chuva(80); FX.toast("🕹️ MODO SECRETO! / SECRET MODE!<br>seis sete seis sete 🤯", { ms: 4000 });
-        SOM.doisTons(523, 784, "triangle"); SOM.falar(1.2, 1.4, "six seven six seven");
-        const main = document.getElementById("main");
-        if (main) { main.classList.add("shake"); setTimeout(() => main.classList.remove("shake"), 1500); }
-      }
-    } else { pos = (e.key === alvo[0]) ? 1 : 0; }
+    if (!noPanico()) { pos = 0; return; }
+    if (e.key === alvo[pos]) { pos++; if (pos === alvo.length) { pos = 0; ativar(); } }
+    else { pos = (e.key === alvo[0]) ? 1 : 0; }
+  });
+
+  // Toque (telemóvel): 4 toques no ecrã de pânico (o botão "ACALMA" não conta)
+  let toques = 0, tT = null;
+  if (overlay) overlay.addEventListener("click", (e) => {
+    if (!noPanico() || e.target.closest("#panicEscape")) return;
+    toques++; clearTimeout(tT); tT = setTimeout(() => { toques = 0; }, 1500);
+    if (toques >= 4) { toques = 0; ativar(); }
   });
 }
 
-/* ====================== F6. RASTO DO CURSOR =========================== */
+// rasto do cursor
 function iniciarRasto() {
   const layer = $("#trailLayer");
   let ligado = false, ultimo = 0;
@@ -346,16 +388,18 @@ function iniciarRasto() {
   window.__setTrail = b => { ligado = b; };
 }
 
-/* =================== F7. TOGGLES (chuva, rasto) ======================= */
+// toggles (chuva, rasto)
 function iniciarToggles() {
   const rain = $("#toggleRain"), trail = $("#toggleTrail");
-  // Chuva de 67 LIGADA por defeito (a escolha do utilizador fica guardada)
-  const chuvaOn = store.get("chuva67on", true);
+  // Chuva de 67: ligada por defeito no desktop, desligada no telemóvel (poupa bateria).
+  // A escolha do utilizador fica guardada e tem prioridade.
+  const chuvaOn = store.get("chuva67on", !POUPAR);
   rain.setAttribute("aria-pressed", chuvaOn ? "true" : "false");
   BG.setRain(chuvaOn);
   rain.addEventListener("click", () => {
     const on = rain.getAttribute("aria-pressed") !== "true";
     rain.setAttribute("aria-pressed", on); BG.setRain(on); store.set("chuva67on", on);
+    if (on) ACH.unlock("rain");
     FX.toast(on ? "🌧️ chuva de 67 ligada" : "chuva desligada");
   });
   trail.addEventListener("click", () => {
@@ -365,19 +409,33 @@ function iniciarToggles() {
   });
 }
 
-/* =================== F8. SOM AO CARREGAR EM BOTÕES ==================== */
+// blip ao clicar nos botões
 function iniciarSomBotoes() {
-  // Um "blip" curto sempre que se carrega num botão (mais brainrot, mais feedback)
+  // Um "blip" curto ao carregar num botão (feedback). Com throttle e a saltar
+  // botões que já têm som próprio, para não sobrepor sons ao martelar no mobile.
+  let ultimo = 0;
   document.addEventListener("click", (e) => {
-    if (e.target.closest("button")) SOM.tom(470 + Math.random() * 240, 0, 0.045, "square", 0.12);
+    if (document.hidden) return;
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.closest("#cpmBtn,#factoryBtn")) return;          // já fazem o próprio som
+    const agora = performance.now(); if (agora - ultimo < 60) return; ultimo = agora;
+    SOM.tom(470 + Math.random() * 240, 0, 0.045, "square", 0.12);
   });
 }
 
-/* ======================================================================= */
-/* ============================ G. FERRAMENTAS =========================== */
-/* ======================================================================= */
+// boas-vindas na 1.ª visita
+function iniciarOnboarding() {
+  // Só na primeira visita: dá as boas-vindas e avisa que há conquistas a desbloquear.
+  if (store.get("visto67", false)) return;
+  store.set("visto67", true);
+  setTimeout(() => {
+    FX.toast(`👋 Bem-vindo ao 6-7! / Welcome!<br>🏆 <b>${ACH.total}</b> conquistas para desbloquear — explora tudo!`, { ach: true, ms: 5200 });
+  }, SEM_MOVIMENTO ? 400 : 2800);   // depois do ecrã de loading
+}
 
-/* ----- 1. CONTADOR ----- */
+// ===== as ferramentas =====
+
+// contador
 function iniciarContador() {
   const num = $("#counterNum"), msg = $("#counterMsg"), btn = $("#counterBtn"), reset = $("#counterReset");
   let total = store.get("contador67", 0); if (typeof total !== "number" || total < 0) total = 0;
@@ -395,12 +453,13 @@ function iniciarContador() {
     num.classList.remove("kick"); void num.offsetWidth; num.classList.add("kick");
     FX.burstEl(btn, 10);
     if (total === 67) ACH.unlock("click67");
+    if (total === 670) ACH.unlock("counter670");
   });
   reset.addEventListener("click", () => { total = 0; store.set("contador67", 0); atualizar(); });
   atualizar();
 }
 
-/* ----- 2. BOLA DE CRISTAL ----- */
+// bola de cristal
 function iniciarBola() {
   const form = $("#crystalForm"), input = $("#crystalIn"), bola = $("#crystalBall"), resp = $("#crystalAns"), hist = $("#crystalHist");
   const R = ["6…… 7", "As estrelas dizem: 6-7 ⭐", "Hmm… 6? … … 7.", "O destino responde: six seven",
@@ -420,6 +479,7 @@ function iniciarBola() {
     const a = escolha(R);
     setTimeout(() => {
       escrever(resp, a, () => FX.burstEl(bola, 10));
+      ACH.unlock("crystal");
       if (perg) { const li = document.createElement("li"); li.innerHTML = `<b>“${esc(perg)}”</b> → ${esc(a)}`; hist.prepend(li); while (hist.children.length > 5) hist.lastChild.remove(); }
       ocupado = false;
     }, SEM_MOVIMENTO ? 200 : 950);
@@ -427,7 +487,7 @@ function iniciarBola() {
 }
 function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 
-/* ----- 3. RANDOM ----- */
+// gerador "aleatório"
 function iniciarRandom() {
   const btn = $("#rngBtn"), meters = $$(".meter-fill"), log = $("#rngLog"), canvas = $("#rngCanvas"), ctx = canvas.getContext("2d");
   const res = $("#rngResult"), num = $("#rngNum"), stats = $("#rngStats");
@@ -455,13 +515,13 @@ function iniciarRandom() {
     if (anim) { clearInterval(anim); anim = null; } meters.forEach(m => m.style.width = "100%");
     num.textContent = "67";
     stats.innerHTML = "confiança / confidence: <b>100%</b> · ±0.0000<br>entropia: 6,7 ZB · prob.: <b>67/67</b><br>veredito: estatisticamente inevitável ✅";
-    res.hidden = false; log.textContent += "\n> RESULTADO: 67 (verificado)_"; log.scrollTop = log.scrollHeight; btn.disabled = false;
+    res.hidden = false; log.textContent += "\n> RESULTADO: 67 (verificado)_"; log.scrollTop = log.scrollHeight; btn.disabled = false; ACH.unlock("rng");
     FX.burstEl(num, 28); SOM.doisTons(660, 880, "triangle");
   }
   ruido();
 }
 
-/* ----- 4. RELÓGIO ----- */
+// relógio parado nas 6:07
 function iniciarRelogio() {
   const ticks = $("#cTicks"), nums = $("#cNums"), hH = $("#hH"), mH = $("#mH"), sH = $("#sH"), dgSecs = $("#dgSecs");
   const NS = "http://www.w3.org/2000/svg", cx = 110, cy = 110;
@@ -497,7 +557,7 @@ function iniciarRelogio() {
   } else dgSecs.textContent = "07";
 }
 
-/* ----- 5. 67 RAZÕES ----- */
+// 67 razões
 function iniciarRazoes() {
   const form = $("#reasonsForm"), input = $("#reasonsIn"), lista = $("#reasonsList"), bar = $("#reasonsBar"), count = $("#reasonsCount"), copy = $("#reasonsCopy");
   const NORMAIS = ["{X} faz toda a gente dizer 6-7", "porque {X} é literalmente 67", "{X} tem 6 problemas e 7 soluções",
@@ -532,13 +592,12 @@ function iniciarRazoes() {
     let n = 0; const tm = setInterval(() => { n += 3; if (n > 67) n = 67; count.textContent = `${n} / 67`; if (n >= 67) clearInterval(tm); }, 20);
     setTimeout(() => { const r = fin.getBoundingClientRect(); if (r.top < innerHeight) FX.burstEl(fin, 22); }, 200);
     txtCopia = f.map((t, i) => `${i + 1}. ${t}`).join("\n") + `\n67. ${remate}`;
+    ACH.unlock("reasons");
   });
   copy.addEventListener("click", async () => { if (!txtCopia) return; try { await navigator.clipboard.writeText(txtCopia); FX.toast("📋 copiado! / copied!"); } catch { FX.toast("⚠️ não deu para copiar"); } });
 }
 
-/* (Soundboard removido a pedido — os sons "six/seven" ficam agora no Boombox.) */
-
-/* ----- 8. CALCULADORA (dá sempre 67) ----- */
+// calculadora (dá sempre 67)
 function iniciarCalculadora() {
   const screen = $("#calcScreen"), keys = $("#calcKeys");
   const LAYOUT = ["C", "(", ")", "÷", "7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "0", ".", "⌫", "="];
@@ -570,7 +629,7 @@ function iniciarCalculadora() {
   render();
 }
 
-/* ----- 9. QUIZ (resultado sempre 100% SIX SEVEN) ----- */
+// quiz (resultado fixo: 67% six seven)
 function iniciarQuiz() {
   const body = $("#quizBody"), result = $("#quizResult");
   const Q = [
@@ -596,7 +655,6 @@ function iniciarQuiz() {
     });
     div.appendChild(opts); body.appendChild(div);
   });
-  // Botão de submeter
   const submit = document.createElement("button");
   submit.type = "button"; submit.className = "act-btn full"; submit.textContent = "✅ Submeter / Submit";
   submit.addEventListener("click", () => {
@@ -619,7 +677,7 @@ function iniciarQuiz() {
   }
 }
 
-/* ----- 10. TRADUTOR ----- */
+// tradutor para 67-ês
 function iniciarTradutor() {
   const inp = $("#transIn"), out = $("#transOut"), swap = $("#transSwap"), copy = $("#transCopy");
   const PALAVRAS = ["six", "seven", "six-seven", "67", "sixty-seven", "seis", "sete", "6-7"];
@@ -637,7 +695,7 @@ function iniciarTradutor() {
   copy.addEventListener("click", async () => { if (!out.value) return; try { await navigator.clipboard.writeText(out.value); FX.toast("📋 copiado! / copied!"); } catch { FX.toast("⚠️ não deu"); } });
 }
 
-/* ----- 11. RODA DA SORTE (cai sempre no 67) ----- */
+// roda da sorte (cai sempre no 67)
 function iniciarRoda() {
   const canvas = $("#wheelCanvas"), ctx = canvas.getContext("2d"), btn = $("#wheelBtn"), result = $("#wheelResult");
   const SEG = ["12", "67", "7", "34", "6", "67", "99", "21"];   // dois "67" para parecer natural
@@ -683,7 +741,7 @@ function iniciarRoda() {
   desenhar();
 }
 
-/* ----- 12. ALCUNHA ----- */
+// gerador de alcunhas
 function iniciarAlcunha() {
   const form = $("#userForm"), inp = $("#userIn"), out = $("#userOut"), copy = $("#userCopy");
   const PRE = ["xX_", "o_", "The", "Pro", "iam", "ItsYa", "Lord", "Mr", "Sir"];
@@ -700,13 +758,13 @@ function iniciarAlcunha() {
     e.preventDefault();
     out.innerHTML = ""; const nomes = gerar(inp.value.trim());
     nomes.forEach((n, i) => { const d = document.createElement("div"); d.className = "user-name"; d.style.animationDelay = (i * 60) + "ms"; d.textContent = n; d.title = "clica para copiar"; d.addEventListener("click", () => copiar(n)); out.appendChild(d); });
-    ultimo = nomes[0]; copy.hidden = false; FX.burstEl(out, 14);
+    ultimo = nomes[0]; copy.hidden = false; FX.burstEl(out, 14); ACH.unlock("username");
   });
   async function copiar(txt) { try { await navigator.clipboard.writeText(txt); FX.toast("📋 " + txt); } catch { FX.toast("⚠️ não deu"); } }
   copy.addEventListener("click", () => copiar(ultimo));
 }
 
-/* ----- 13. TEMPO (sempre 67°) ----- */
+// previsão do tempo (sempre 67°)
 function iniciarTempo() {
   const form = $("#weatherForm"), inp = $("#weatherIn"), card = $("#weatherCard"), week = $("#weatherWeek");
   const DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -718,11 +776,11 @@ function iniciarTempo() {
     week.innerHTML = "";
     DIAS.forEach((d, i) => { const el = document.createElement("div"); el.className = "weather-day"; el.innerHTML = `<b>${d}</b><div>${ICOS[i % ICOS.length]}</div><span class="wd-t">67°</span>`; week.appendChild(el); });
   }
-  form.addEventListener("submit", e => { e.preventDefault(); if (inp.value.trim()) FX.toast("🙄 cidade ignorada / city ignored"); render(inp.value.trim()); });
-  render("");   // estado inicial
+  form.addEventListener("submit", e => { e.preventDefault(); if (inp.value.trim()) FX.toast("🙄 cidade ignorada / city ignored"); render(inp.value.trim()); ACH.unlock("weather"); });
+  render("");
 }
 
-/* ----- 14. FÁBRICA (idle clicker, persiste) ----- */
+// fábrica idle (guarda no localStorage)
 function iniciarFabrica() {
   const numEl = $("#factoryNum"), rateEl = $("#factoryRate"), btn = $("#factoryBtn"), perEl = $("#factoryPer"), ups = $("#upgrades"), reset = $("#factoryReset");
   const UPG = [
@@ -750,13 +808,12 @@ function iniciarFabrica() {
   function salvar() { store.set("fabrica67", st); }
   btn.addEventListener("click", () => { st.n += st.perClick; if (st.n >= 67) ACH.unlock("factory"); FX.burstEl(btn, 6); SOM.tom(660, 0, 0.06, "square", 0.15); render(); });
   reset.addEventListener("click", () => { st = { n: 0, perClick: 1, own: {} }; UPG.forEach(u => st.own[u.id] = 0); salvar(); render(); });
-  // Produção automática
   let acc = 0;
   setInterval(() => { const ps = perSecTotal(); if (ps > 0) { st.n += ps; if (st.n >= 67) ACH.unlock("factory"); render(); acc++; if (acc % 5 === 0) salvar(); } }, 1000);
   render();
 }
 
-/* ----- 15. PET VIRTUAL (persiste) ----- */
+// pet virtual (guarda no localStorage)
 function iniciarPet() {
   const pet = $("#pet"), speech = $("#petSpeech"), hungerEl = $("#petHunger"), happyEl = $("#petHappy"), feed = $("#petFeed"), play = $("#petPlay");
   const CARAS = ["🐣", "🐥", "🐤"];
@@ -783,7 +840,7 @@ function iniciarPet() {
   render();
 }
 
-/* ----- 16. CPM (6-7 por minuto) ----- */
+// cliques por minuto (6,7s)
 function iniciarCPM() {
   const timer = $("#cpmTimer"), btn = $("#cpmBtn"), label = $("#cpmLabel"), result = $("#cpmResult");
   const DUR = 6.7;
@@ -816,7 +873,7 @@ function iniciarCPM() {
   reset();
 }
 
-/* ----- 17. BOOMBOX (batida 6-7 em loop) ----- */
+// boombox: batida em loop + voz six/seven
 function iniciarBoombox() {
   const stepsEl = $("#bbSteps"), playBtn = $("#bbPlay"), tempo = $("#bbTempo"), bpmEl = $("#bbBpm"), L = $("#bbL"), R = $("#bbR");
   const N = 8;
@@ -836,7 +893,7 @@ function iniciarBoombox() {
     passo = (passo + 1) % N;
   }
   // VOZ (independente da batida) — cadência própria, nunca sobreposta → sem bugar a 250bpm.
-  // A voz dispara sem esperar que a anterior acabe; só limitamos o ritmo a um mínimo seguro.
+  // voz com cadência própria, senão buga a 250bpm
   function vozTick() {
     const seis = vozPasso % 2 === 0;
     SOM.falar(1.25, 1, seis ? "six" : "seven");
@@ -849,6 +906,7 @@ function iniciarBoombox() {
     if (tocar) return; tocar = true; playBtn.textContent = "⏹️ Parar / Stop"; passo = 0; vozPasso = 0; SOM.ctx();
     intervalo = setInterval(tick, bpmMs());
     vozTick(); vozTimer = setInterval(vozTick, vozMs());
+    ACH.unlock("boombox");
   }
   function stop() {
     if (!tocar) return; tocar = false; playBtn.textContent = "▶️ Tocar / Play";
@@ -868,7 +926,7 @@ function iniciarBoombox() {
   window.__pararBoombox = stop;   // a navegação usa isto para desligar ao sair da página
 }
 
-/* ----- 7. SCROLL INFINITO ----- */
+// scroll infinito
 function iniciarScroll() {
   const feed = $("#scrollFeed"), escape = $("#escapeBtn"), depthEl = $("#scrollDepth");
   let contador = 0, sentinela = null, observer = null, conquista = false;
@@ -882,7 +940,7 @@ function iniciarScroll() {
       const div = document.createElement("div");
       div.className = "scroll-item " + (seis ? "s6" : "s7");
       div.textContent = seis ? "6" : "7";
-      div.style.fontSize = "clamp(5rem," + (24 + rnd(14)) + "vw,16rem)";
+      div.style.fontSize = "clamp(4rem," + (POUPAR ? (14 + rnd(8)) : (24 + rnd(14))) + "vw,14rem)";
       if (contador % 67 === 0) { div.className = "scroll-item giant"; div.textContent = "67"; div.style.fontSize = ""; }
       feed.insertBefore(div, sentinela);
       if (contador % 30 === 0) { const m = document.createElement("div"); m.className = "scroll-milestone"; m.textContent = `🚩 ${MS[Math.floor(contador / 30 - 1) % MS.length]} (nº ${contador})`; feed.insertBefore(m, sentinela); }

@@ -2,7 +2,7 @@
 <html lang="pt" data-theme="7">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta name="description" content="O templo do brainrot 6-7 / 67: 16 mini-ferramentas parvas, easter eggs e muito caos. Seis. Sete. 67." />
   <meta name="author" content="6-7 / 67" />
   <meta name="theme-color" content="#14081f" />
@@ -11,12 +11,12 @@
   <meta property="og:description" content="16 mini-ferramentas parvas sobre o 67. Seis. Sete. Mais nada importa." />
   <meta property="og:type" content="website" />
   <title>🤚 6-7 / 67 — O SITE 🔮</title>
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=10" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>🤚</text></svg>" />
 </head>
 <body>
 
-  <!-- ================= ECRÃ DE LOADING (enche até 67% e depois 100%) ========= -->
+  <!-- loading (enche até 67% e depois completa) -->
   <div id="loader" class="loader">
     <div class="loader-67">67</div>
     <p class="loader-txt" id="loaderTxt">a carregar o caos… / loading chaos…</p>
@@ -30,7 +30,7 @@
   <!-- Camada do rasto do cursor (DOM, opcional) -->
   <div id="trailLayer" aria-hidden="true"></div>
 
-  <!-- ========================= BARRA DE TOPO ========================= -->
+  <!-- topo -->
   <header class="topbar">
     <button type="button" class="logo" data-view="hub" aria-label="Voltar ao início / Home">
       <span class="logo-67">67</span><span class="logo-hand">🤚</span>
@@ -38,20 +38,29 @@
     <div class="topbar-actions">
       <button type="button" id="toggleRain"  class="icon-btn" aria-pressed="false" title="Chuva de 67 / 67 rain">🌧️</button>
       <button type="button" id="toggleTrail" class="icon-btn" aria-pressed="false" title="Rasto do cursor / Cursor trail">🖐️</button>
-      <button type="button" id="openAch"     class="icon-btn" title="Conquistas / Achievements">🏆</button>
+      <button type="button" id="openAch"     class="icon-btn" title="Conquistas / Achievements" aria-label="Conquistas">🏆<span class="ach-badge" id="achBadge">0/0</span></button>
       <button type="button" id="toggleTheme" class="icon-btn theme-btn" title="Tema 6 (claro) / 7 (escuro)">🌙&nbsp;7</button>
     </div>
   </header>
 
   <main id="main">
 
-    <!-- ============================== HUB ============================== -->
+    <!-- hub -->
     <section class="view active" id="view-hub">
       <div class="hero">
         <p class="hero-eyebrow">⚠️ aviso / warning: derrete cérebros · 67% garantido ⚠️</p>
         <h1 class="hero-title"><span class="wob">6</span><span class="dash">·</span><span class="wob">7</span></h1>
         <p class="hero-sub">16 ferramentas parvas. Um só número: <strong>67</strong>.<br>Seis. Sete. <strong>That's it.</strong> 🤚</p>
       </div>
+
+      <!-- Barra de conquistas: mostra logo à entrada que há coisas para desbloquear -->
+      <button type="button" class="hub-ach" data-view="achievements" aria-label="Ver conquistas">
+        <span class="hub-ach-ico">🏆</span>
+        <span class="hub-ach-info">
+          <span class="hub-ach-top"><b id="hubAchCount">0/0</b> conquistas <span class="hub-ach-cta">— desbloqueia-as todas! →</span></span>
+          <span class="hub-ach-bar"><span class="hub-ach-fill" id="hubAchFill"></span></span>
+        </span>
+      </button>
 
       <!-- Grelha de cartões — um por ferramenta (preenchida também via HTML) -->
       <div class="cards" id="cards">
@@ -74,7 +83,7 @@
       </div>
     </section>
 
-    <!-- ===== 1. CONTADOR ===== -->
+    <!-- contador -->
     <section class="view tool" id="view-counter">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🔢 Contador / Counter</h2>
@@ -86,7 +95,7 @@
       </div>
     </section>
 
-    <!-- ===== 2. BOLA DE CRISTAL ===== -->
+    <!-- bola de cristal -->
     <section class="view tool" id="view-crystal">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🔮 Bola de Cristal / Crystal Ball</h2>
@@ -102,7 +111,7 @@
       <ul class="crystal-hist" id="crystalHist" aria-live="polite"></ul>
     </section>
 
-    <!-- ===== 3. RANDOM ===== -->
+    <!-- aleatório -->
     <section class="view tool" id="view-random">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🎲 Gerador Aleatório / RNG</h2>
@@ -120,7 +129,7 @@
       </div>
     </section>
 
-    <!-- ===== 4. RELÓGIO ===== -->
+    <!-- relógio -->
     <section class="view tool" id="view-clock">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🕕 Relógio Avariado / Broken Clock</h2>
@@ -139,7 +148,7 @@
       </div>
     </section>
 
-    <!-- ===== 5. 67 RAZÕES ===== -->
+    <!-- 67 razões -->
     <section class="view tool" id="view-reasons">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">📜 67 Razões Pelas Quais… / 67 Reasons Why…</h2>
@@ -152,7 +161,7 @@
       <ol class="reasons-list" id="reasonsList"></ol>
     </section>
 
-    <!-- ===== 8. CALCULADORA ===== -->
+    <!-- calculadora -->
     <section class="view tool" id="view-calc">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🧮 Calculadora / Calculator</h2>
@@ -163,7 +172,7 @@
       </div>
     </section>
 
-    <!-- ===== 9. QUIZ ===== -->
+    <!-- quiz -->
     <section class="view tool" id="view-quiz">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🧠 Quão 67 És Tu? / How 67 Are You?</h2>
@@ -171,7 +180,7 @@
       <div class="quiz-result" id="quizResult" hidden></div>
     </section>
 
-    <!-- ===== 10. TRADUTOR ===== -->
+    <!-- tradutor -->
     <section class="view tool" id="view-translator">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🔤 Tradutor / Translator</h2>
@@ -183,7 +192,7 @@
       <button type="button" class="mini-btn" id="transCopy">📋 Copiar / Copy</button>
     </section>
 
-    <!-- ===== 11. RODA DA SORTE ===== -->
+    <!-- roda da sorte -->
     <section class="view tool" id="view-wheel">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🎡 Roda da Sorte / Wheel of Fortune</h2>
@@ -195,7 +204,7 @@
       <p class="wheel-result" id="wheelResult"></p>
     </section>
 
-    <!-- ===== 12. ALCUNHA ===== -->
+    <!-- alcunha -->
     <section class="view tool" id="view-username">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🎮 Gerador de Alcunha / Username</h2>
@@ -208,7 +217,7 @@
       <button type="button" class="mini-btn" id="userCopy" hidden>📋 Copiar / Copy</button>
     </section>
 
-    <!-- ===== 13. TEMPO ===== -->
+    <!-- tempo -->
     <section class="view tool" id="view-weather">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🌦️ Previsão do Tempo / Weather</h2>
@@ -221,7 +230,7 @@
       <div class="weather-week" id="weatherWeek"></div>
     </section>
 
-    <!-- ===== 14. FÁBRICA ===== -->
+    <!-- fábrica -->
     <section class="view tool" id="view-factory">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🏭 Fábrica de 67 / 67 Factory</h2>
@@ -234,7 +243,7 @@
       <button type="button" class="mini-btn" id="factoryReset">♻️ reset fábrica</button>
     </section>
 
-    <!-- ===== 15. PET ===== -->
+    <!-- pet -->
     <section class="view tool" id="view-pet">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🐣 Pet Virtual / Virtual Pet</h2>
@@ -252,7 +261,7 @@
       </div>
     </section>
 
-    <!-- ===== 16. CPM ===== -->
+    <!-- cpm -->
     <section class="view tool" id="view-cpm">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">⚡ 6-7 Por Minuto / CPM</h2>
@@ -262,7 +271,7 @@
       <p class="cpm-result" id="cpmResult"></p>
     </section>
 
-    <!-- ===== 17. BOOMBOX ===== -->
+    <!-- boombox -->
     <section class="view tool" id="view-boombox">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">📻 Boombox / Beat Maker</h2>
@@ -274,15 +283,16 @@
       <label class="bb-tempo">Tempo: <input type="range" id="bbTempo" min="70" max="250" value="110" /> <span id="bbBpm">110</span> bpm</label>
     </section>
 
-    <!-- ===== ACHIEVEMENTS ===== -->
+    <!-- conquistas -->
     <section class="view tool" id="view-achievements">
       <button type="button" class="back" data-view="hub">← Início / Home</button>
       <h2 class="vt">🏆 Conquistas / Achievements</h2>
       <p class="vsub" id="achProgress"></p>
+      <p class="vnote">Explora as ferramentas para as desbloquear. Código secreto 🤫: abre o <b>PÂNICO 🚨</b> e, lá dentro, escreve <b>6 7 6 7</b> no teclado <b>ou</b> toca 4× no ecrã.</p>
       <div class="ach-grid" id="achGrid"></div>
     </section>
 
-    <!-- ===== SCROLL INFINITO (ecrã inteiro) ===== -->
+    <!-- scroll infinito (ecrã inteiro) -->
     <section class="view view-full" id="view-scroll">
       <button type="button" class="escape-btn" id="escapeBtn">⬅️ VOLTAR / ESCAPE</button>
       <div class="scroll-depth" id="scrollDepth">profundidade: 0</div>
@@ -291,11 +301,11 @@
 
   </main>
 
-  <!-- ===================== MODO PÂNICO (ecrã inteiro) ===================== -->
+  <!-- modo pânico (ecrã inteiro) -->
   <div id="panic" class="panic">
     <button type="button" class="escape-btn" id="panicEscape">⬅️ ACALMA / CALM DOWN</button>
     <div class="panic-text">PÂNICO<br>6️⃣7️⃣<br>PANIC</div>
-    <p class="panic-hint">🤫 dizem que há um código secreto para isto…</p>
+    <p class="panic-hint">🤫 dizem que o código secreto se entra… por aqui.</p>
   </div>
 
   <!-- Botão de PÂNICO fixo -->
@@ -306,9 +316,9 @@
 
   <footer class="footer">
     <p>feito com 6 amor e 7 caos · made with 6 love &amp; 7 chaos 🤚🤌🔮🕕🎲</p>
-    <p class="footer-small">*tudo 67% inventado · dica / hint: dois seis-setes seguidos abrem um segredo 👀 · v6.7</p>
+    <p class="footer-small">*tudo 67% inventado · dica: no <b>PÂNICO 🚨</b>, escreve <b>6 7 6 7</b> (ou toca 4×) 👀 · v6.7</p>
   </footer>
 
-  <script src="script.js?v=6"></script>
+  <script src="script.js?v=10"></script>
 </body>
 </html>
